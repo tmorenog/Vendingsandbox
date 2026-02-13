@@ -217,23 +217,42 @@ Key ideas to explore:
 
 ---
 
-## Web App
+## Web App (Vercel / Next.js)
 
-A Streamlit-based web UI lets you configure parameters, run simulations, and
-view interactive charts -- all in the browser.
+A Next.js frontend with Vercel serverless Python API functions. Deployable to
+Vercel or runnable locally.
 
-### Running the web app
+### Deploy to Vercel
+
+1. Push this repo to GitHub.
+2. Import the repo at [vercel.com/new](https://vercel.com/new).
+3. Vercel auto-detects Next.js and the Python functions in `api/`.
+4. No environment variables needed.
+
+### Run locally
 
 ```bash
-pip install -r requirements.txt
-streamlit run webapp/app.py
+npm install
+npm run dev          # Next.js dev server on http://localhost:3000
 ```
 
-### Pages
+The Python API endpoints (`/api/simulate`, `/api/evaluate`, `/api/validate_agent`)
+require `vercel dev` to serve locally (the Vercel CLI runs both the Next.js dev
+server and the Python functions together):
 
-1. **Configure** -- set horizon, costs, and constraint parameters.
-2. **Run Simulation** -- choose agents, scenario, and run mode; view KPI cards
-   and daily charts.
+```bash
+npm i -g vercel
+vercel dev           # serves everything on http://localhost:3000
+```
+
+### Local Streamlit alternative
+
+A Streamlit-based UI is also available in `webapp/`:
+
+```bash
+pip install streamlit matplotlib
+streamlit run webapp/app.py
+```
 
 ### Providing student agents in the web UI
 
@@ -255,29 +274,38 @@ Each file must define one class:
 ```
 src/
   vendsim/
-    __init__.py
     config.py          # Dataclasses and default parameters
     env.py             # Main environment and step loop
     customers.py       # Customer agents (provided)
     vendors.py         # Vendor agents (provided)
     metrics.py         # KPI calculation helpers
     scenarios.py       # Normal + stress scenarios
-    web_runner.py      # High-level simulation callable for the web UI
+    web_runner.py      # High-level simulation callable for web UIs
   agents/
-    __init__.py
     baseline_procurement.py    # Baseline procurement agent
     baseline_replenishment.py  # Baseline replenishment agent
     student_procurement.py     # YOUR CODE HERE
     student_replenishment.py   # YOUR CODE HERE
   run_episode.py       # Run single seed, print KPIs
   evaluate.py          # Run many seeds, print table + score
-webapp/
+app/                   # Next.js frontend (App Router)
+  layout.tsx           # Root layout with navigation
+  page.tsx             # Home page
+  globals.css          # Tailwind global styles
+  configure/page.tsx   # Configuration page
+  run/page.tsx         # Run simulation + charts page
+api/                   # Vercel serverless Python functions
+  _utils.py            # Shared helpers (not an endpoint)
+  simulate.py          # POST /api/simulate
+  evaluate.py          # POST /api/evaluate
+  validate_agent.py    # POST /api/validate_agent
+lib/                   # Shared TypeScript modules
+  types.ts             # Type definitions
+  defaults.ts          # Default config values
+webapp/                # Streamlit alternative (local only)
   app.py               # Streamlit entrypoint
-  utils_web.py         # Shared helpers (config builder, agent loader)
-  pages/
-    1_Configure.py     # Parameter configuration page
-    2_Run_Simulation.py # Run + charts page
+  utils_web.py         # Shared helpers
+  pages/               # Streamlit pages
 tests/
   test_smoke.py        # Smoke tests
-requirements.txt       # pip dependencies (streamlit, matplotlib)
 ```

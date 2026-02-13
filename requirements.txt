@@ -1,2 +1,4 @@
-streamlit>=1.30.0
-matplotlib>=3.7.0
+# No pip packages are required for the Vercel Python API (vendsim is stdlib-only).
+#
+# For local Streamlit development (webapp/):
+#   pip install streamlit matplotlib
