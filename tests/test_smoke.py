@@ -149,5 +149,59 @@ class TestSmokeStudentStubs(unittest.TestCase):
         self.assertTrue(math.isfinite(kpis["score"]))
 
 
+class TestWebRunner(unittest.TestCase):
+    """Tests for the web_runner.run_simulation function."""
+
+    def test_run_simulation_returns_required_keys(self):
+        from vendsim.web_runner import run_simulation
+
+        cfg = EnvConfig(horizon=30)
+        result = run_simulation(
+            cfg,
+            BaselineProcurementAgent,
+            BaselineReplenishmentAgent,
+            seed=42,
+            scenario_name="normal",
+        )
+        self.assertIn("daily", result)
+        self.assertIn("kpis", result)
+        self.assertIn("meta", result)
+
+        # Check daily structure
+        self.assertEqual(len(result["daily"]), 30)
+        day0 = result["daily"][0]
+        for key in (
+            "day", "profit", "cash", "units_sold", "units_lost",
+            "fill_rate", "visit", "machine_on_hand", "stockroom_on_hand",
+        ):
+            self.assertIn(key, day0, f"Missing daily key: {key}")
+
+        # Check KPIs
+        kpis = result["kpis"]
+        self.assertIn("score", kpis)
+        self.assertIn("total_profit", kpis)
+
+        # Check meta
+        meta = result["meta"]
+        self.assertEqual(meta["seed"], 42)
+        self.assertEqual(meta["scenario"], "normal")
+        self.assertEqual(meta["horizon"], 30)
+
+    def test_run_simulation_stress_scenarios(self):
+        from vendsim.web_runner import run_simulation
+
+        cfg = EnvConfig(horizon=30)
+        for sc in ("demand_surge", "vendor_disruption", "cash_shock"):
+            result = run_simulation(
+                cfg,
+                BaselineProcurementAgent,
+                BaselineReplenishmentAgent,
+                seed=77,
+                scenario_name=sc,
+            )
+            self.assertEqual(len(result["daily"]), 30)
+            self.assertTrue(math.isfinite(result["kpis"]["score"]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -217,6 +217,39 @@ Key ideas to explore:
 
 ---
 
+## Web App
+
+A Streamlit-based web UI lets you configure parameters, run simulations, and
+view interactive charts -- all in the browser.
+
+### Running the web app
+
+```bash
+pip install -r requirements.txt
+streamlit run webapp/app.py
+```
+
+### Pages
+
+1. **Configure** -- set horizon, costs, and constraint parameters.
+2. **Run Simulation** -- choose agents, scenario, and run mode; view KPI cards
+   and daily charts.
+
+### Providing student agents in the web UI
+
+On the **Run Simulation** page, select one of:
+
+- **Baseline** -- uses the built-in baseline agents.
+- **Student Upload** -- upload two `.py` files.
+- **Student Paste** -- paste code into text areas.
+
+Each file must define one class:
+
+- `student_procurement.py` -> `class StudentProcurementAgent` with `act(self, obs: dict) -> dict`
+- `student_replenishment.py` -> `class StudentReplenishmentAgent` with `act(self, obs: dict) -> dict`
+
+---
+
 ## Project Structure
 
 ```
@@ -229,6 +262,7 @@ src/
     vendors.py         # Vendor agents (provided)
     metrics.py         # KPI calculation helpers
     scenarios.py       # Normal + stress scenarios
+    web_runner.py      # High-level simulation callable for the web UI
   agents/
     __init__.py
     baseline_procurement.py    # Baseline procurement agent
@@ -237,6 +271,13 @@ src/
     student_replenishment.py   # YOUR CODE HERE
   run_episode.py       # Run single seed, print KPIs
   evaluate.py          # Run many seeds, print table + score
+webapp/
+  app.py               # Streamlit entrypoint
+  utils_web.py         # Shared helpers (config builder, agent loader)
+  pages/
+    1_Configure.py     # Parameter configuration page
+    2_Run_Simulation.py # Run + charts page
 tests/
   test_smoke.py        # Smoke tests
+requirements.txt       # pip dependencies (streamlit, matplotlib)
 ```
